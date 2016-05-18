@@ -196,14 +196,14 @@ There are three different main configurations all 3 elements allow: `circle`, `s
 				return 'background: rgba('+this.value.red+', '+this.value.green+','+this.value.blue+', '+this.value.alpha+')';
 			},
 			_isValueDefined: function(){
-				return this.value.red >= 0 && this.value.green >= 0 && this.value.blue >= 0;
+				return this.value && this.value.red >= 0 && this.value.green >= 0 && this.value.blue >= 0;
 			},
 			_setValueAsHexFromValue: function(){
 				if(this._isValueDefined()){
 					var hex = '#';
 					var value = this.value;
 					['red', 'green', 'blue'].forEach(function(c){
-						var h = value[c].toString(16);
+						var h = parseInt(value[c]).toString(16);
 						l = h.length;
 						hex += l < 2 ? '0' : '';
 						hex += l < 1 ? '0' : '';

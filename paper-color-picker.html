@@ -485,7 +485,7 @@ and to open the dialog
                 color: undefined,
                 distance: Infinity
               };
-              colors.forEach((color) => {
+              colors.forEach(function(color) {
                 var distance = Math.sqrt(Math.pow(this.immediateColor['red']-color.rgb[0],2)+Math.pow(this.immediateColor['green']-color.rgb[1],2)+Math.pow(this.immediateColor['blue']-color.rgb[2],2));
                 if(distance < closest.distance){
                   closest.color = color;
