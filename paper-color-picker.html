@@ -198,35 +198,31 @@ and to open the dialog
 
     <div id="preview">
       <div id="color"></div>
-      <div id="title">
-        <template is="dom-if" if="{{noFullNames}}">
-          Color Picker
-        </template>
-        <template is="dom-if" if="{{!noFullNames}}">
-          {{immediateColorAsString}}
-        </template>
+      <div id="title" style$="[[_computeTitleStyle(immediateColor.*)]]">
+        <template is="dom-if" if="{{noFullNames}}">[[ title ]]</template>
+        <template is="dom-if" if="{{!noFullNames}}">[[ immediateColorAsString ]]</template>
       </div>
     </div>
     <div id="detail">
 
-      <paper-color-circle id="picker"  shape="{{shape}}" type="{{type}}" value="{{colorValue}}" color="{{immediateColor}}" hue="{{colorHue}}" lightness="{{colorLightness}}" on-lightness-changed="_setSliders" on-value-changed="_setSliders"></paper-color-circle>
+      <paper-color-circle id="picker" shape="{{shape}}" type="{{type}}" value="{{colorValue}}" color="{{immediateColor}}" hue="{{colorHue}}" lightness="{{colorLightness}}" on-lightness-changed="_setSliders" on-value-changed="_setSliders"></paper-color-circle>
 
       <div id="details">
         <template is="dom-if" if="{{_showValueSlider(shape, type)}}">
           <paper-input-container attr-for-value="immediate-value">
-            <label>Value (Brightness)</label>
+            <label>[[ valueLabel ]]</label>
             <paper-slider id="valueSlider" class="paper-input-input" min="0" max="100" pin="true" value="100" immediate-value="{{sliderValue}}"></paper-slider>
           </paper-input-container>
         </template>
         <template is="dom-if" if="{{_showLightnessSlider(shape, type)}}">
           <paper-input-container attr-for-value="immediate-value">
-            <label>Lightness</label>
+            <label>[[ lightnessLabel ]]</label>
             <paper-slider id="lightnessSlider" class="paper-input-input" min="0" max="100" pin="true" value="50" immediate-value="{{sliderLightness}}"></paper-slider>
           </paper-input-container>
         </template>
         <template is="dom-if" if="{{_showHuePicker(shape)}}">
           <paper-input-container attr-for-value="id">
-            <label>Hue</label>
+            <label>[[ hueLabel ]]</label>
             <canvas id="huePicker" class="paper-input-input" on-tap="huePickerPickColor" on-track="huePickerPickColor" width="360" height="1"></canvas>
           </paper-input-container>
           <!--<paper-slider id="hueSlider" min="0" max="100" value="50" immediate-value="{{sliderHue}}"></paper-slider>-->
@@ -234,7 +230,7 @@ and to open the dialog
 
         <template is="dom-if" if="{{_and(allowAlpha,_initialAlphaValueHackApplied)}}">
           <paper-input-container attr-for-value="immediate-value" hidden$="{{!_or(alwaysShowAlpha, advanced)}}">
-            <label>Alpha (transparency)</label>
+            <label>[[ alphaLabel ]]</label>
             <paper-slider id="alphaPicker" class="paper-input-input" min="0" max="1" step="0.01" value="{{_initialAlphaValueHack}}" immediate-value="{{immediateColor.alpha}}"></paper-slider>
           </paper-input-container>
         </template>
@@ -242,18 +238,18 @@ and to open the dialog
         <div hidden$="{{!advanced}}">
           <!--<div class="landscapeOnly">-->
           <div id="rgb">
-            <paper-input id="redField" value="{{immediateColor.red}}" on-input="changeColorMixture" type="number" min="0" max="255" label="Red"></paper-input>
-            <paper-input id="greenField" value="{{immediateColor.green}}" on-input="changeColorMixture" type="number" min="0" max="255" label="Green"></paper-input>
-            <paper-input id="blueField" value="{{immediateColor.blue}}" on-input="changeColorMixture" type="number" min="0" max="255" label="Blue"></paper-input>
+            <paper-input id="redField" value="{{immediateColor.red}}" on-input="changeColorMixture" type="number" min="0" max="255" label="[[ redLabel ]]"></paper-input>
+            <paper-input id="greenField" value="{{immediateColor.green}}" on-input="changeColorMixture" type="number" min="0" max="255" label="[[ greenLabel ]]"></paper-input>
+            <paper-input id="blueField" value="{{immediateColor.blue}}" on-input="changeColorMixture" type="number" min="0" max="255" label="[[ blueLabel ]]"></paper-input>
           </div>
           <!--</div>-->
         </div>
       </div>
 
       <div class="buttons">
-        <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button on-tap="toggleAdvancedMode" hidden$="{{advanced}}">Advanced</paper-button>
-        <paper-button dialog-confirm on-tap="setColor">OK</paper-button>
+        <paper-button dialog-dismiss>[[ cancelLabel ]]</paper-button>
+        <paper-button on-tap="toggleAdvancedMode" hidden$="{{advanced}}">[[ advancedLabel ]]</paper-button>
+        <paper-button dialog-confirm on-tap="setColor">[[ okLabel ]]</paper-button>
       </div>
     </div>
 
@@ -395,6 +391,42 @@ and to open the dialog
             type: Boolean,
             reflectToAttribute: true,
             observer: '_recenterDialog'
+          },
+          title: {
+            type: String,
+            value: 'Color Picker'
+          },
+          valueLabel: {
+            type: String,
+            value: 'Value (Brightness)'
+          },
+          alphaLabel: {
+            type: String,
+            value: 'Alpha (Transparency)'
+          },
+          cancelLabel: {
+            type: String,
+            value: 'Cancel'
+          },
+          advancedLabel: {
+            type: String,
+            value: 'Advanced'
+          },
+          okLabel: {
+            type: String,
+            value: 'Ok'
+          },
+          redLabel: {
+            type: String,
+            value: 'Red'
+          },
+          greenLabel: {
+            type: String,
+            value: 'Green'
+          },
+          blueLabel: {
+            type: String,
+            value: 'Blue'
           }
         },
         observers: [
@@ -550,6 +582,18 @@ and to open the dialog
           this.$.dialog.open();
           if (this._showHuePicker())
             this.drawHuePicker();
+        },
+        _computeTitleStyle: function(change){
+          var color = change.base, cssColor, M, m, l;
+          M = Math.max(color.red, color.green, color.blue);
+          m = Math.min(color.red, color.green, color.blue);
+          l = (M + m) / 2.0;
+          if(color.alpha < 0.25 || l > 127.5){
+            cssColor = 'black';
+          } else {
+            cssColor = 'white';
+          }
+          return "color: "+cssColor;
         },
         _computeColouredaaborder: function(){
           return {
